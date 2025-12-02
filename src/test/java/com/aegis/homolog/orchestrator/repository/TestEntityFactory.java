@@ -7,6 +7,7 @@ import com.aegis.homolog.orchestrator.model.entity.TestProject;
 import com.aegis.homolog.orchestrator.model.entity.TestScenario;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -17,39 +18,42 @@ final class TestEntityFactory {
     }
 
     static TestProject testProject(String projectId, String scope) {
+        Instant now = Instant.now();
         return TestProject.builder()
                 .projectId(projectId)
                 .teamId("team-" + projectId)
                 .name("Regression Suite " + projectId)
                 .scope(scope)
                 .description("Regression coverage for " + scope)
-            .createdAt(Instant.parse("2024-01-01T00:00:00Z"))
-            .updatedAt(Instant.parse("2024-01-02T00:00:00Z"))
+            .createdAt(now.minus(30, ChronoUnit.DAYS))
+            .updatedAt(now.minus(29, ChronoUnit.DAYS))
             .createdBy("AutoAI")
             .lastUpdatedBy("AutoAI")
                 .build();
     }
 
     static Domain domain(String domainId, String name) {
+        Instant now = Instant.now();
         return Domain.builder()
                 .domainId(domainId)
                 .name(name)
                 .description(name + " critical domain")
-            .createdAt(Instant.parse("2024-01-03T00:00:00Z"))
-            .updatedAt(Instant.parse("2024-01-04T00:00:00Z"))
+            .createdAt(now.minus(28, ChronoUnit.DAYS))
+            .updatedAt(now.minus(27, ChronoUnit.DAYS))
             .createdBy("AutoAI")
             .lastUpdatedBy("AutoAI")
                 .build();
     }
 
     static Tag tag(String tagId, String level) {
+        Instant now = Instant.now();
         return Tag.builder()
                 .tagId(tagId)
                 .name(tagId.equals("tag-reg") ? "Regression" : "Smoke")
                 .description("Tag " + tagId)
                 .level(level)
-            .createdAt(Instant.parse("2024-01-05T00:00:00Z"))
-            .updatedAt(Instant.parse("2024-01-06T00:00:00Z"))
+            .createdAt(now.minus(26, ChronoUnit.DAYS))
+            .updatedAt(now.minus(25, ChronoUnit.DAYS))
             .createdBy("AutoAI")
             .lastUpdatedBy("AutoAI")
                 .build();
@@ -72,6 +76,7 @@ final class TestEntityFactory {
     }
 
     static TestScenario testScenario(String scenarioId, TestProject project, List<String> tagIds) {
+        Instant now = Instant.now();
         return TestScenario.builder()
                 .scenarioId(scenarioId)
                 .featureId("feature-" + scenarioId)
@@ -84,8 +89,8 @@ final class TestEntityFactory {
                 .generatedGherkin("Feature: Sample\nScenario: Create")
                 .createdBy("AutoAI")
                 .lastUpdatedBy("AutoAI")
-                .createdAt(Instant.parse("2024-01-01T00:00:00Z"))
-                .updatedAt(Instant.parse("2024-01-02T00:00:00Z"))
+                .createdAt(now.minus(20, ChronoUnit.DAYS))
+                .updatedAt(now.minus(19, ChronoUnit.DAYS))
                 .totalExecutions(10)
                 .totalFailures(0)
                 .failureRate(BigDecimal.ZERO)
