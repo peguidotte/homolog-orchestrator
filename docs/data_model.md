@@ -30,6 +30,10 @@ O modelo final segue a hierarquia **Organização > Time > Projeto** para garant
 | name | String | Nome do Projeto (Ex: 'Regressão HML Interna'). |
 | scope | String | Define o escopo de teste: ('internal_systems', 'client_homologation'). |
 | description | String | Descrição do Projeto. |
+| createdAt | Timestamp | Data de criação. |
+| updatedAt | Timestamp | Última atualização. |
+| createdBy | String (FK) | Criado por quem. |
+| lastUpdatedBy | String (FK) | Modificado por quem. |
 
 ## **Metadados e Configuração**
 
@@ -40,6 +44,10 @@ O modelo final segue a hierarquia **Organização > Time > Projeto** para garant
 | domainId | String (PK) | ID Único do Domínio. |
 | name | String | Nome do Domínio (Ex: 'Users', 'Titles', 'Liquidation'). |
 | description | String | Descrição detalhada do escopo do domínio. |
+| createdAt | Timestamp | Data de criação. |
+| updatedAt | Timestamp | Última atualização. |
+| createdBy | String (FK) | Criado por quem. |
+| lastUpdatedBy | String (FK) | Modificado por quem. |
 
 ### TAGS
 
@@ -49,6 +57,10 @@ O modelo final segue a hierarquia **Organização > Time > Projeto** para garant
 | name | String | Nome da Tag (Ex: 'smoke', 'regressao', 'borda'). |
 | description | String | Descrição do uso da tag. |
 | level | String | Nível de Aplicação ('feature', 'scenario', 'both'). |
+| createdAt | Timestamp | Data de criação. |
+| updatedAt | Timestamp | Última atualização. |
+| createdBy | String (FK) | Criado por quem. |
+| lastUpdatedBy | String (FK) | Modificado por quem. |
 
 ### ENVIRONMENTS
 
@@ -166,18 +178,18 @@ Armazena a inteligência e o diagnóstico da IA sobre a execução, incluindo a 
 | scenarioId | String (PK) | ID Único do Cenário. | Sim | Sem |
 | featureId | String (FK) | Chave estrangeira para a Feature à qual pertence. | Sim | Sem |
 | title | String | Título legível do Cenário. | Sim | Sem |
-| tags | Array | Array de IDs de Tags aplicadas no nível Cenário. | Não | Sem |
-| customVariables | Array | Array de FKs de variableId a serem injetadas/sobrepostas neste Cenário. | Não | Sem |
-| usedApiCalls | Array | Array de FKs de callId utilizados neste Cenário (Rastreamento). | Não | Sem |
+| tagIds | Array | Array de IDs de Tags aplicadas no nível Cenário. | Não | Sem |
+| customVariableIds | Array | Array de FKs de variableId a serem injetadas/sobrepostas neste Cenário. | Não | Sem |
+| usedApiCallIds | Array | Array de FKs de callId utilizados neste Cenário (Rastreamento). | Não | Sem |
 | abstractModel | JSON/TEXT | A representação do Cenário em blocos Drag-and-Drop (Modelo Low-Code). | Sim | Sem |
 | generatedGherkin | TEXT | O Gherkin puro do Cenário. | Sim | Sem |
 | updatedAt | Timestamp | Última modificação. | Sim | time.now |
 | createdAt | Timestamp | Data de criação. | Sim | time.now |
 | createdBy | String (FK) | Criado por quem. | Sim | AutoAI |
-| lastUpdateBy | String (FK) | Modificado por quem | Não | AutoAI |
+| lastUpdatedBy | String (FK) | Modificado por quem | Não | AutoAI |
 | totalExecutions | Integer | Contador total de vezes que este Cenário foi executado. | Sim | 0 |
 | totalFailures | Integer | Contador total de vezes que este Cenário falhou. | Sim | 0 |
-| failureRate | Float | Taxa de falha (Ex: 0.0−1.0), calculada como totalFailures / totalExecutions. | Sim | 100 |
+| failureRate | Float | Taxa de falha (0.0−1.0), calculada como totalFailures / totalExecutions. | Sim | 0 |
 
 ### API_CALLS
 
@@ -186,7 +198,7 @@ Armazena a inteligência e o diagnóstico da IA sobre a execução, incluindo a 
 | callId | String (PK) | ID Único da Chamada. | Sim | Sem |
 | projectId | String (FK) | Chave de isolamento. | Sim | Sem |
 | domainId | String (FK) | Chave estrangeira para o domínio ao qual a chamada pertence. | Sim | Sem |
-| baseUrl | String (FK) | Chave estrangeira para a baseUrl usada | Sim | Sem |
+| baseUrlId | String (FK) | Chave estrangeira para a baseUrl usada | Sim | Sem |
 | routeDefinition | String | A rota da API (Ex: v1/users). | Sim | Sem |
 | method | String | Método HTTP (Ex: POST). | Sim | Sem |
 | customVariables | Array | Array de FKs de variableId a serem injetadas/sobrepostas nesta Chamada. | Não | Sem |

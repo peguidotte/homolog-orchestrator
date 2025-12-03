@@ -133,15 +133,19 @@ Exemplo: `1-SetupEntities.md`
 Fluxo obrigatório:
 
 1. Escrever o plano
-1.1 Validar o plano com a equipe (eu)
-2. Criar o arquivo da tarefa em `.github/tasks`
-3. Escrever **testes unitários**
-4. Implementar **código de produção**
-5. Gerar documentação (Swagger)
+2. Validar o plano com a equipe
+3. Criar o arquivo da tarefa em `.github/tasks`
+4. Escrever **testes unitários**
+5. Executar todos os testes (devem falhar)
+6. Implementar **código de produção**
+7. Gerar documentação (Swagger)
+8. Executar todos os testes (novamente, devem passar)
+9. Validar a implementação com a equipe
 
 ### **3. Entrega e PR**
 
-* Após validar cada feature com a equipe, criar uma branch dedicada, aplicar o commit com mensagem descritiva, publicar no repositório remoto e abrir uma Pull Request contendo título e descrição claros antes de encerrar a tarefa.
+* Após validar cada feature com a equipe, criar uma branch dedicada, aplicar o commit com mensagem descritiva, publicar no repositório remoto e abrir uma Pull Request contendo título e descrição claros antes de encerrar a tarefa. Use o MCP do github e/ ou gitkraken para facilitar o processo.
+* Utilize também o `.github/pull_request_template.md` para garantir que todos os pontos importantes sejam cobertos na descrição da PR.
 
 ---
 

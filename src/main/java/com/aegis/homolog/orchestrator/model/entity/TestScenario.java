@@ -10,10 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -21,15 +19,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(callSuper = true, exclude = "project")
 @Entity
 @Table(name = "T_AEGIS_TEST_SCENARIOS")
-public class TestScenario {
+public class TestScenario extends AuditableEntity {
 
     @Id
     @Column(name = "SCENARIO_ID", nullable = false, length = 64)
@@ -71,18 +72,6 @@ public class TestScenario {
     @Column(name = "GENERATED_GHERKIN", nullable = false)
     private String generatedGherkin;
 
-    @Column(name = "CREATED_AT", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "UPDATED_AT", nullable = false)
-    private Instant updatedAt;
-
-    @Column(name = "CREATED_BY", nullable = false, length = 64)
-    private String createdBy;
-
-    @Column(name = "LAST_UPDATED_BY", nullable = false, length = 64)
-    private String lastUpdatedBy;
-
     @Column(name = "TOTAL_EXECUTIONS", nullable = false)
     private Integer totalExecutions;
 
@@ -94,13 +83,6 @@ public class TestScenario {
 
     @PrePersist
     void onPersist() {
-        var now = Instant.now();
-        if (createdAt == null) {
-            createdAt = now;
-        }
-        if (updatedAt == null) {
-            updatedAt = now;
-        }
         if (totalExecutions == null) {
             totalExecutions = 0;
         }
@@ -110,10 +92,5 @@ public class TestScenario {
         if (failureRate == null) {
             failureRate = BigDecimal.ZERO;
         }
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = Instant.now();
     }
 }

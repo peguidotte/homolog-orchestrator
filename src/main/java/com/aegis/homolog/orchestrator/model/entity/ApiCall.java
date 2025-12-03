@@ -9,10 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -20,15 +17,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(callSuper = true, exclude = {"project", "domain"})
 @Entity
 @Table(name = "T_AEGIS_API_CALLS")
-public class ApiCall {
+public class ApiCall extends AuditableEntity {
 
     @Id
     @Column(name = "CALL_ID", nullable = false, length = 64)
@@ -65,31 +65,4 @@ public class ApiCall {
     @Column(name = "REQUIRED_PARAMS")
     private String requiredParams;
 
-    @Column(name = "CREATED_AT", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "UPDATED_AT", nullable = false)
-    private Instant updatedAt;
-
-    @Column(name = "CREATED_BY", nullable = false, length = 64)
-    private String createdBy;
-
-    @Column(name = "LAST_UPDATED_BY", nullable = false, length = 64)
-    private String lastUpdatedBy;
-
-    @PrePersist
-    void onPersist() {
-        var now = Instant.now();
-        if (createdAt == null) {
-            createdAt = now;
-        }
-        if (updatedAt == null) {
-            updatedAt = now;
-        }
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = Instant.now();
-    }
 }
