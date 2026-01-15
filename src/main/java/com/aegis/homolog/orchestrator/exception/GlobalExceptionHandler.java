@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
                 .getFieldErrors()
                 .stream()
                 .map(fieldError -> ErrorResponseDTO.of(
-                        "INVALID_FIELD_LENGTH",
+                        "INVALID_FIELD_VALUE",
                         fieldError.getDefaultMessage(),
                         fieldError.getField()
                 ))
