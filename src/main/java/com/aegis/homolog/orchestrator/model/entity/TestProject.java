@@ -41,9 +41,6 @@ public class TestProject extends AuditableEntity {
     @Column(name = "name", nullable = false, length = 128)
     private String name;
 
-    @Column(name = "scope", nullable = false, length = 64)
-    private String scope;
-
     @Column(name = "description", length = 1024)
     private String description;
 }

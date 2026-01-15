@@ -1,130 +1,344 @@
-# **Especificação MVP: Aegis-Test (Homolog Core)**
+# **Especificação MVP: Aegis Tests (Homolog Core)**
+
+> Documento técnico de referência para implementação do MVP
+> Objetivo: orientar **GitHub Copilot + dev humano** na codificação correta
+
+---
 
 ## **I. Objetivo Consolidado do MVP**
 
-Provar a capacidade do **Homolog Orchestrator** de:
+Validar o módulo **Aegis Tests** como um sistema capaz de:
 
-* Receber um requisito em linguagem natural.
-* Traduzir isso em um artefato de teste estruturado (**metadados + código Karate DSL**) via *Dual AI*.
-* Persistir esse artefato no banco para edição no frontend.
+* Criar e organizar **TestProjects** dentro de um Projeto Core.
+* Estruturar **especificações de testes manuais** (API-first).
+* Orquestrar a **geração automática de testes via IA**, produzindo:
 
-O MVP deve validar:
+   * Metadados estruturados
+   * Código executável em **Karate DSL**
+* Persistir tudo de forma **editável, auditável e evolutiva** no backend.
 
-* Comunicação e tipagem entre **Spring (aegis-orchestrator-test)** e **Python (aegis-analysis-agent)**.
-* Geração de um **JSON estruturado (ScenarioDraft)** a partir do requisito.
-* Persistência correta de **test_scenarios, api_calls, domains, tags**.
+O MVP **não é sobre execução em larga escala**, e sim sobre:
 
----
-
-## **II. Arquitetura de Geração e Persistência**
-
-A geração é orquestrada pelo **Spring**, mas executada pelos **Agentes Python**.
-
-### **Módulos**
-
-| Módulo               | Tecnologia   | Função                                                       |
-| -------------------- | ------------ | ------------------------------------------------------------ |
-| Frontend             | Next.js      | Enviar `userPrompt` e `swaggerUrl` ao Spring                 |
-| Orchestrator         | Spring Boot  | Receber requisição, chamar Agentes, persistir JSON e Gherkin |
-| Agente 1 (Estrutura) | Python + LLM | Gerar JSON **ScenarioDraft**                                 |
-| Agente 2 (Código)    | Python + LLM | Gerar Karate DSL (**generatedGherkin**)                      |
+✅ Qualidade de geração
+✅ Governança de dados
+✅ Arquitetura extensível
 
 ---
 
-## **III. Modelo de Dados (Entidades do MVP)**
+## **II. Arquitetura Geral (Visão Atualizada)**
 
-| Coleção            | Propósito                 | Campos Chave                                               |
-| ------------------ | ------------------------- | ---------------------------------------------------------- |
-| **test_projects**  | Isolamento e contexto     | `projectId`                                                |
-| **domains**        | Organização funcional     | `domainId`, `name`                                         |
-| **tags**           | Categorizar testes        | `tagId`, `name`                                            |
-| **api_calls**      | Componentes reutilizáveis | `callId`, `routeDefinition`, `baseGherkin`                 |
-| **test_scenarios** | Artefato principal        | `scenarioId`, `title`, `generatedGherkin`, `abstractModel` |
+A geração é **orquestrada pelo Spring**, mas **planejada e executada pelos agentes de IA**.
 
-⚠️ **Ponto chave:**
-`generatedGherkin` (TEXT) em **test_scenarios** permite edição Low-Code ou High-Code via UI.
+### **Módulos Envolvidos**
 
----
-
-## **IV. Fluxo de Geração End-to-End (Assíncrono Controlado)**
-
-A geração ocorre em **duas etapas**, com callbacks dos agentes.
-
-### **Fluxo**
-
-1. **Usuário inicia geração**
-   *Frontend → Spring*
-   `POST /generation/start`
-
-2. **Spring armazena o pedido e chama Agente 1**
-
-3. **Agente 1 gera JSON estruturado (ScenarioDraft)**
-   Exemplo:
-
-   ```json
-   {
-     "title": "Criação de Cliente...",
-     "apiCallDefinitions": [...]
-   }
-   ```
-
-4. **Agente 1 envia callback para o Spring**
-   `POST /generation/continue/{tempId}`
-
-5. **Spring cria metadados e registros de api_calls**
-
-6. **Spring chama Agente 2 com o JSON + IDs**
-
-7. **Agente 2 gera o Karate DSL**
-
-8. **Agente 2 envia callback final**
-   `POST /generation/finish/{scenarioId}`
-
-9. **Spring persiste o `generatedGherkin` e responde ao Frontend**
+| Módulo          | Tecnologia   | Responsabilidade                               |
+| --------------- | ------------ | ---------------------------------------------- |
+| Frontend        | Next.js      | Criar specs, aprovar planos, visualizar testes |
+| Aegis Core      | Spring Boot  | Projetos, membros, permissões                  |
+| **Aegis Tests** | Spring Boot  | Specs, environments, variáveis, orquestração   |
+| Aegis Agents    | Python + LLM | Planejamento, validação e geração de testes    |
 
 ---
 
-## **V. Próximos Passos (Foco em Desenvolvimento)**
+## **III. Conceitos-Chave do Domínio**
 
-### **Tarefa Crítica Atual: Mapeamento de Dados e API**
+### **TestProject**
 
-1. **DTO de Entrada**
+Container raiz do módulo de testes, vinculado a um **Project Core**.
 
-   * Classe para receber `projectId`, `userPrompt`, `swaggerUrl`.
+Contém:
 
-2. **DTO de Saída (Agente 1 → Spring)**
-
-   * Deve mapear exatamente o JSON do **ScenarioDraft**.
-
-3. **Endpoints do GenerationController**
-
-   * `startGeneration`
-   * `continueGeneration`
-   * `finishGeneration`
+* Environments
+* Global Variables
+* Domains
+* API Calls
+* Test Specifications
+* Test Scenarios (gerados)
 
 ---
 
-## **Ordem de Desenvolvimento (Priorização)**
+### **Environment**
 
-### **FASE 1 — Contrato e Persistência (Mocked)**
+Representa um contexto de execução.
 
-Repositório: **aegis-orchestrator-test**
+Cada Environment pode ter:
 
-* Modelagem das entidades e repositories.
-* Implementar 3 endpoints.
-* Criar mocks para os Agentes.
+* Base URL própria
+* Variáveis próprias
+* Auth própria
+* Tags específicas
 
-### **FASE 2 — Agentes de IA**
+Exemplo:
 
-Repositório: **aegis-analysis-agent**
+* `DEV`
+* `STAGING`
+* `PROD`
 
-* Desenvolver Agente 1 (JSON).
-* Desenvolver Agente 2 (Gherkin).
-* Ligar Spring → Python de verdade.
+---
 
-### **FASE 3 — Frontend e Execução**
+### **Global Variables**
 
-Repositórios: **homologger-ui**, Infra GCloud
+Variáveis reutilizáveis e versionáveis.
 
-* Construir UI.
-* Implementar execução (Cloud Run).
+Escopos:
+
+* `PROJECT`
+* `ENVIRONMENT`
+
+Exemplos:
+
+* `BASE_URL`
+* `AUTH_TOKEN`
+* `CLIENT_ID`
+
+---
+
+### **Domain (Semântico)**
+
+Entidade **puramente organizacional**, sem comportamento técnico.
+
+Serve para:
+
+* Agrupar specs e cenários
+* Ajudar IA a entender contexto funcional
+
+Exemplo:
+
+* `Recebíveis`
+* `Duplicatas`
+* `Liquidação`
+
+---
+
+### **API Call**
+
+Definição reutilizável de uma chamada HTTP.
+
+Separada da Specification.
+
+Contém:
+
+* Método
+* Path
+* Auth necessária
+* Payload base (opcional)
+* Expectativas comuns
+
+---
+
+## **IV. Modelo de Dados do MVP**
+
+### **Entidades Principais**
+
+| Entidade              | Propósito              |
+| --------------------- | ---------------------- |
+| `test_projects`       | Raiz do módulo         |
+| `environments`        | Contextos de execução  |
+| `global_variables`    | Reuso e parametrização |
+| `domains`             | Organização semântica  |
+| `api_calls`           | Chamadas reutilizáveis |
+| `test_specifications` | Especificação manual   |
+| `test_scenarios`      | Testes gerados pela IA |
+
+---
+
+### **test_specifications**
+
+Entrada principal do usuário.
+
+Campos relevantes:
+
+* `method`
+* `baseUrl` (preferencialmente variável)
+* `path`
+* `requiresAuth`
+* `description`
+* `exampleRequest` (JSON no MVP)
+* `requiresApproval` (boolean)
+
+---
+
+### **test_scenarios**
+
+Artefato final da IA.
+
+Campos:
+
+* `title`
+* `domainId`
+* `tags`
+* `abstractModel` (JSON estruturado)
+* `generatedGherkin` (TEXT, editável)
+* `status` (`DRAFT`, `APPROVED`, `ERROR`)
+
+⚠️ **Decisão de design chave**
+`generatedGherkin` é salvo como **TEXT** para permitir:
+
+* Edição manual
+* Correção pós-geração
+* Evolução low-code / high-code
+
+---
+
+## **V. Convenção de MicroSteps (Karate DSL)**
+
+Como Karate não possui steps nativos, adotamos uma convenção.
+
+```gherkin
+# STEP 1: Criar duplicata válida
+Given url baseUrl
+And path '/duplicates'
+And request payload
+
+# STEP 2: Validar criação
+When method post
+Then status 201
+```
+
+Regras:
+
+* `# STEP {n}: descrição`
+* Tudo abaixo pertence ao STEP até o próximo
+* IA deve respeitar essa convenção **sempre**
+
+---
+
+## **VI. Fluxo de Geração de Testes (Atualizado)**
+
+### **Fluxo Assíncrono Orquestrado**
+
+1. **Usuário cria Specification**
+
+   * Status: `DRAFT`
+
+2. **Usuário solicita geração**
+
+   * `POST /v1/test-specifications/{id}/generate`
+
+3. **Aegis Tests prepara contexto**
+
+   * Project
+   * Environment
+   * Variables
+   * Domains
+   * API Calls
+   * Specification
+
+4. **Aegis Tests envia requisição ao Aegis Agents**
+
+---
+
+### **Pipeline de IA (Interno ao Aegis Agents)**
+
+**Agente 1 — Planejamento**
+
+* Entende o contexto
+* Define Scenarios
+* Cria `ScenarioDraft (JSON)`
+* Valida coerência funcional
+
+**(Opcional) Aprovação Humana**
+
+* Se `requiresApproval = true`
+* Usuário revisa plano
+
+**Agente 2 — Geração**
+
+* Gera Karate DSL
+* Aplica microSteps
+* Usa variáveis globais
+* Usa baseUrls corretas
+
+**Agente 3 — Auto-validação**
+
+* Executa mentalmente / tecnicamente
+* Detecta erros grotescos
+* NÃO “corrige” regra de negócio errada
+* Marca teste como `ERROR` se inválido
+
+---
+
+5. **Aegis Agents retorna resultado**
+6. **Aegis Tests persiste**
+7. **Frontend é notificado via evento**
+
+---
+
+## **VII. Comunicação e Eventos**
+
+O MVP **já assume arquitetura orientada a eventos**.
+
+Eventos internos:
+
+* `TEST_GENERATION_STARTED`
+* `TEST_PLAN_CREATED`
+* `TEST_GENERATION_FAILED`
+* `TEST_GENERATION_COMPLETED`
+
+Uso:
+
+* Atualização de UI
+* Logs
+* Auditoria
+* Futuro WebSocket / SSE
+
+---
+
+## **VIII. Endpoints Essenciais do MVP**
+
+### **TestProject**
+
+* `POST /v1/projects/{projectId}/test-project`
+
+### **Specification**
+
+* `POST /v1/test-specifications`
+* `POST /v1/test-specifications/{id}/generate`
+* `POST /v1/test-specifications/{id}/approve`
+
+### **Generation (interno)**
+
+* `POST /internal/generation/start`
+* `POST /internal/generation/plan`
+* `POST /internal/generation/finish`
+
+---
+
+## **IX. Ordem Recomendada de Desenvolvimento**
+
+### **FASE 1 — Fundação**
+
+* TestProject
+* Environment
+* Global Variables
+* Domain
+* API Call
+* Specification
+
+### **FASE 2 — Orquestração**
+
+* Pipeline de geração
+* DTOs claros
+* Mocks de IA
+
+### **FASE 3 — IA**
+
+* Planejamento
+* Geração
+* Auto-validação
+
+### **FASE 4 — UI**
+
+* Aprovação
+* Edição
+* Feedback visual
+
+---
+
+## **X. Princípios de Design (Importantes para o Copilot)**
+
+* ❌ IA não corrige regra de negócio errada
+* ✅ IA falha explicitamente
+* ✅ Tudo é versionável
+* ✅ Nada é “mágico”
+* ✅ Tudo é editável depois

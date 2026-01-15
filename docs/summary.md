@@ -1,23 +1,144 @@
-# **Homologger**
+## **Summary — Aegis Test (MVP)**
+
+O **Aegis Test** é o módulo do Aegis responsável por **modelar, estruturar e gerar testes automatizados de API**, servindo como a base técnica para a estratégia de **auto-homologação inteligente** da plataforma.
+
+Ele existe para resolver o principal gargalo dos testes modernos:
+**transformar especificações incompletas e conhecimento difuso em testes confiáveis, rastreáveis e executáveis**, com suporte de Inteligência Artificial — sem perder controle técnico.
+
+Este repositório opera **exclusivamente no domínio de testes** e assume que **projetos, usuários e permissões já foram resolvidos pelo Core**.
 
 ---
 
-### O Problema
+## **Papel do Aegis Test dentro do Homologger**
 
-No complexo ecossistema de softwares, as equipes de tecnologia enfrentam um grande desafio: garantir a estabilidade e a qualidade de sistemas em constante evolução, especialmente em ambientes de testes difíceis de replicar. A criação manual de testes é lenta, o diagnóstico de falhas em integrações é complexo, e a falta de visibilidade sobre a saúde dos sistemas consome tempo e recursos valiosos.
+No ecossistema do Homologger, o Aegis Test atua como:
 
-### A Solução
+* O **motor de estruturação** de testes (antes da execução)
+* O **orquestrador de geração via IA**
+* O **repositório de conhecimento testável** do sistema
 
-O Homologger é uma plataforma que atua como um hub de auto-homologação, transformando o processo de testes funcionais e de integração. Ele permite que as equipes de desenvolvimento e QA, assim como clientes externos, criem, executem e auditem testes de forma rápida, inteligente e autônoma.
+Ele conecta:
 
-### O Que é o Homologger?
+* Especificações humanas (Low-Code)
+* Contexto técnico estruturado
+* Código executável (High-Code)
 
-O Homologger é uma ferramenta de teste que une o poder da **Inteligência Artificial** com a flexibilidade de uma plataforma **Low-Code para High-Code**. O seu principal objetivo é automatizar a validação de sistemas internos e otimizar a homologação de clientes externos que se integram aos produtos da empresa, garantindo a qualidade desde a fase de desenvolvimento até a produção.
+---
 
-### Como o Homologger Funciona?
+## **Responsabilidades do Aegis Test**
 
-O Homologger resolve os desafios de testes de três formas principais:
+O Aegis Test é responsável por:
 
-1. **Criação de Testes Low-Code:** Através de uma interface intuitiva, a plataforma permite a criação de testes de API usando uma linguagem simples e declarativa. A IA auxilia neste processo, gerando cenários de teste automaticamente e transformando-os em código de teste padronizado. Para casos mais complexos, o desenvolvedor pode injetar código customizado (**High-Code**) de forma isolada, sem comprometer a simplicidade do teste principal.
-2. **Execução Confiável e Escalável:** Os testes são executados em um ambiente de nuvem robusto, otimizado para lidar com altos volumes de requisições. O Homologger pode rodar centenas de testes em paralelo, de forma isolada e sem sobrecarregar os sistemas sob teste. Ele se integra a pipelines de CI/CD (Integração Contínua/Entrega Contínua) e a agendamentos automáticos, garantindo que os testes sejam parte do fluxo de trabalho diário.
-3. **Diagnóstico Inteligente e Auditoria:** O grande diferencial do Homologger está na sua capacidade de análise. A IA monitora cada execução, diagnostica automaticamente a causa de uma falha (seja um bug, um problema de ambiente ou um teste 'flaky') e gera um resumo do problema. Se necessário, ela pode criar um card de bug no Jira, notificando o time de desenvolvimento com todas as informações necessárias para a correção, o que acelera o ciclo de feedback e aumenta a eficiência.
+### **1. Contexto e Organização**
+
+* Criar e gerenciar o **TestProject**, entidade raiz do módulo.
+* Gerenciar **Environments** (DEV, STAGING, PROD), cada um com:
+
+    * Variáveis globais próprias
+    * Base URLs específicas
+    * Configurações de autenticação independentes
+* Gerenciar **Global Variables**, com escopo por environment.
+* Gerenciar **Domains semânticos**, usados para:
+
+    * Organização funcional
+    * Contextualização da IA
+    * Navegação no frontend
+* Gerenciar **Tags**, para classificação e filtragem.
+
+---
+
+### **2. Componentização Técnica**
+
+* Definir **API Calls reutilizáveis**, desacopladas das especificações.
+* Centralizar definições de:
+
+    * Método
+    * Path
+    * Auth
+    * Headers
+    * Contratos esperados
+* Reduzir redundância e inconsistência entre testes.
+
+---
+
+### **3. Criação de Especificações de Teste**
+
+* Permitir a criação de **Test Specifications manuais**, informando:
+
+    * Método HTTP
+    * URL (base + path)
+    * Necessidade de autenticação
+    * Exemplos de request (JSON no MVP)
+    * Descrição funcional
+* Quanto mais rica a especificação, **melhor a geração automática**.
+
+---
+
+### **4. Geração Automática de Testes via IA**
+
+* Consolidar todo o contexto do projeto:
+
+    * Environments
+    * Variáveis
+    * Domains
+    * API Calls
+    * Specification
+* Orquestrar o fluxo de geração com os **Aegis Agents**, que:
+
+    1. Planejam cenários e passos
+    2. Geram um modelo abstrato estruturado (JSON)
+    3. Geram código executável em **Karate DSL**
+    4. Autoexecutam e se validam durante a construção
+* Persistir o resultado como:
+
+    * **Artefato editável**
+    * **Low-Code ou High-Code**
+    * **Auditável e versionável**
+
+---
+
+### **5. Persistência e Evolução**
+
+* Persistir testes como entidades de domínio, não apenas arquivos.
+* Permitir edição posterior sem regeneração obrigatória.
+* Preparar o sistema para múltiplos canais futuros:
+
+    * Repositórios Git
+    * API Docs
+    * Eventos de PR
+    * Outras linguagens de teste
+
+---
+
+## **O que o Aegis Test NÃO faz (MVP)**
+
+Fora do escopo deste módulo:
+
+* ❌ Gestão de usuários, organizações ou billing
+* ❌ Execução distribuída de testes em larga escala
+* ❌ Integração direta com CI/CD
+* ❌ Gerenciamento de repositórios Git
+
+> Esses comportamentos pertencem a outros módulos do Homologger.
+
+---
+
+## **Princípios de Design**
+
+* O Aegis Test **orquestra**, não “imagina” — a inteligência vive nos agentes.
+* A IA **não corrige regras de negócio inválidas**: ela falha explicitamente.
+* Nenhum teste é considerado válido sem persistência explícita.
+* Tudo é **editável após geração**.
+* O sistema é projetado para **Low-Code primeiro, High-Code quando necessário**.
+* Cada decisão de design visa **reduzir erro humano e aumentar rastreabilidade**.
+
+---
+
+## **Objetivo do MVP**
+
+Validar que o Aegis é capaz de:
+
+* Receber uma especificação funcional
+* Traduzi-la em testes estruturados via IA
+* Persistir esses testes como ativos do produto
+* Preparar o terreno para execução, auditoria e diagnóstico inteligentes

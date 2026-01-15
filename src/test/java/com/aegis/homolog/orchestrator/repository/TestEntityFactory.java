@@ -22,7 +22,6 @@ final class TestEntityFactory {
         return TestProject.builder()
                 .projectId(projectId)
                 .name("Regression Suite " + projectId)
-                .scope(scope)
                 .description("Regression coverage for " + scope)
                 .createdAt(now.minus(30, ChronoUnit.DAYS))
                 .updatedAt(now.minus(29, ChronoUnit.DAYS))
