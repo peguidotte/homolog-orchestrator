@@ -36,12 +36,12 @@ class RepositoryPersistenceTest {
     private TestScenarioRepository testScenarioRepository;
 
     @Test
-    @DisplayName("Should store and query projects by scope")
-    void shouldStoreAndQueryProjectsByScope() {
+    @DisplayName("Should store and query projects by projectId")
+    void shouldStoreAndQueryProjectsByProjectId() {
         var project = TestEntityFactory.testProject(1L, "internal_systems");
         testProjectRepository.save(project);
 
-        var results = testProjectRepository.findByScope("internal_systems");
+        var results = testProjectRepository.findByProjectId(1L);
 
         assertThat(results)
                 .hasSize(1)

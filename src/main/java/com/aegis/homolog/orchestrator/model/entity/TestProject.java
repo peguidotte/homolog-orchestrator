@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,9 @@ import lombok.experimental.SuperBuilder;
         indexes = {
                 @Index(name = "idx_test_project_project_id", columnList = "project_id"),
                 @Index(name = "idx_test_project_name", columnList = "name")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_test_project_project_name", columnNames = {"project_id", "name"})
         }
 )
 @Getter
@@ -38,10 +42,10 @@ public class TestProject extends AuditableEntity {
     @Column(name = "project_id", nullable = false)
     private Long projectId;
 
-    @Column(name = "name", nullable = false, length = 128)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "description", length = 1024)
+    @Column(name = "description", length = 1000)
     private String description;
 }
 
