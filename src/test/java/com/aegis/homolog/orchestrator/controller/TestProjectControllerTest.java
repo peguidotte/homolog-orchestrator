@@ -97,7 +97,7 @@ class TestProjectControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$[0].errorCode").value("INVALID_FIELD_LENGTH"))
+                    .andExpect(jsonPath("$[0].errorCode").value("REQUIRED_FIELD"))
                     .andExpect(jsonPath("$[0].field").value("name"));
         }
 
