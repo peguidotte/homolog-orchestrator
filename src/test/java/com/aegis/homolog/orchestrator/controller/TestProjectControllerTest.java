@@ -54,8 +54,8 @@ class TestProjectControllerTest {
         void shouldReturn201WhenCreatedSuccessfully() throws Exception {
             // Arrange
             var request = new CreateTestProjectRequestDTO(
-                    "Suíte de Testes - Recebíveis",
-                    "Testes de integração da API de Duplicatas"
+                    "Receivables Test Suite",
+                    "Integration tests for Invoices API"
             );
 
             var response = new TestProjectResponseDTO(

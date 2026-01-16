@@ -58,8 +58,8 @@ class TestProjectServiceTest {
         @BeforeEach
         void setUp() {
             validRequest = new CreateTestProjectRequestDTO(
-                    "Suíte de Testes - Recebíveis",
-                    "Testes de integração da API de Duplicatas"
+                    "Receivables Test Suite",
+                    "Integration tests for Invoices API"
             );
         }
 
