@@ -9,21 +9,21 @@ import org.springframework.lang.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ErrorResponseDTO(
 
-        @Schema(description = "Internal standardized error code", example = "INVALID_FIELD_LENGTH", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Internal standardized error code", example = "ERROR_CODE_HERE", requiredMode = Schema.RequiredMode.REQUIRED)
         @NonNull String errorCode,
 
-        @Schema(description = "User-friendly error message", example = "Name must have at most 255 characters", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "User-friendly error message", example = "User-friendly error message here", requiredMode = Schema.RequiredMode.REQUIRED)
         @NonNull String message,
 
-        @Schema(description = "Field name that caused the error (when applicable)", example = "name")
+        @Schema(description = "Field name that caused the error (when applicable)", example = "Field name if applicable")
         @Nullable String field
 ) {
 
-    public static ErrorResponseDTO of(@NonNull String errorCode, @NonNull String message) {
+    public static ErrorResponseDTO of(String errorCode, String message) {
         return new ErrorResponseDTO(errorCode, message, null);
     }
 
-    public static ErrorResponseDTO of(@NonNull String errorCode, @NonNull String message, @Nullable String field) {
+    public static ErrorResponseDTO of(String errorCode, String message, String field) {
         return new ErrorResponseDTO(errorCode, message, field);
     }
 }
