@@ -93,8 +93,9 @@ class AuthCredentialsTest {
             String expectedEncoded = Base64.getEncoder().encodeToString(
                     "user:pass".getBytes(StandardCharsets.UTF_8)
             );
-            assertThat(header).isEqualTo("Basic " + expectedEncoded);
-            assertThat(header).isEqualTo("Basic dXNlcjpwYXNz");
+            assertThat(header)
+                    .isEqualTo("Basic " + expectedEncoded)
+                    .isEqualTo("Basic dXNlcjpwYXNz");
         }
 
         @Test

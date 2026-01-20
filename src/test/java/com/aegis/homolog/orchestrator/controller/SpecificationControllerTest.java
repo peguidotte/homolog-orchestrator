@@ -385,7 +385,7 @@ class SpecificationControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isUnprocessableEntity())
+                    .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$[0].errorCode").value("DOMAIN_NOT_FOUND"));
         }
 

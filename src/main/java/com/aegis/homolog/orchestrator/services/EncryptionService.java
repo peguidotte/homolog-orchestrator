@@ -5,12 +5,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 @Service
@@ -20,18 +29,28 @@ public class EncryptionService {
 
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
+    private static final String KEY_DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final int GCM_IV_LENGTH = 12; // 96 bits
     private static final int GCM_TAG_LENGTH = 128; // bits
+    private static final int PBKDF2_ITERATIONS = 65536;
+    private static final int KEY_LENGTH_BITS = 256;
+
+    /**
+     * Fixed salt for key derivation.
+     * For MVP this is sufficient.
+     * TODO: In production, consider using a unique salt per installation.
+     */
+    private static final byte[] SALT = "aegis-encryption-salt-v1".getBytes(StandardCharsets.UTF_8);
 
     private final SecretKeySpec secretKey;
     private final SecureRandom secureRandom;
 
     public EncryptionService(EncryptionProperties properties) {
         validateSecretKey(properties.getSecretKey());
-        byte[] keyBytes = normalizeKey(properties.getSecretKey());
+        byte[] keyBytes = deriveKey(properties.getSecretKey());
         this.secretKey = new SecretKeySpec(keyBytes, ALGORITHM);
         this.secureRandom = new SecureRandom();
-        log.info("EncryptionService initialized with AES-256-GCM");
+        log.info("EncryptionService initialized with AES-256-GCM and PBKDF2 key derivation");
     }
 
     /**
@@ -81,7 +100,13 @@ public class EncryptionService {
             byteBuffer.put(ciphertext);
 
             return Base64.getEncoder().encodeToString(byteBuffer.array());
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            log.error("Encryption algorithm not available", e);
+            throw new EncryptionException("Encryption algorithm not available", e);
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+            log.error("Invalid encryption key or parameters", e);
+            throw new EncryptionException("Invalid encryption key or parameters", e);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
             log.error("Encryption failed", e);
             throw new EncryptionException("Failed to encrypt data", e);
         }
@@ -114,27 +139,43 @@ public class EncryptionService {
 
             byte[] plaintext = cipher.doFinal(ciphertext);
             return new String(plaintext, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            log.error("Decryption failed", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid Base64 encoded data", e);
+            throw new EncryptionException("Invalid encrypted data format", e);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            log.error("Decryption algorithm not available", e);
+            throw new EncryptionException("Decryption algorithm not available", e);
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+            log.error("Invalid decryption key or parameters", e);
+            throw new EncryptionException("Invalid decryption key or parameters", e);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            log.error("Decryption failed - data may be corrupted or tampered", e);
             throw new EncryptionException("Failed to decrypt data", e);
         }
     }
 
     /**
-     * Normalizes the key to 32 bytes (AES-256).
-     * If key is shorter, it's padded. If longer, it's truncated.
+     * Derives a 256-bit key from the user-provided secret using PBKDF2.
+     * This is much more secure than simple padding/truncation.
+     *
+     * @param secret the user-provided secret key
+     * @return a 32-byte (256-bit) derived key
      */
-    private byte[] normalizeKey(String key) {
-        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-        byte[] normalizedKey = new byte[32]; // AES-256
-
-        System.arraycopy(
-                keyBytes, 0,
-                normalizedKey, 0,
-                Math.min(keyBytes.length, normalizedKey.length)
-        );
-
-        return normalizedKey;
+    private byte[] deriveKey(String secret) {
+        try {
+            PBEKeySpec spec = new PBEKeySpec(
+                    secret.toCharArray(),
+                    SALT,
+                    PBKDF2_ITERATIONS,
+                    KEY_LENGTH_BITS
+            );
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(KEY_DERIVATION_ALGORITHM);
+            return factory.generateSecret(spec).getEncoded();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("PBKDF2 algorithm not available", e);
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalStateException("Invalid key specification for PBKDF2", e);
+        }
     }
 
     /**

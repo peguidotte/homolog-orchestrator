@@ -5,6 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,9 +41,10 @@ class EncryptionServiceTest {
             String encrypted = encryptionService.encrypt(plaintext);
 
             // Assert
-            assertThat(encrypted).isNotNull();
-            assertThat(encrypted).isNotEqualTo(plaintext);
-            assertThat(encrypted).isNotBlank();
+            assertThat(encrypted)
+                    .isNotNull()
+                    .isNotEqualTo(plaintext)
+                    .isNotBlank();
         }
 
         @Test
@@ -124,7 +129,7 @@ class EncryptionServiceTest {
             // Act & Assert
             assertThatThrownBy(() -> encryptionService.decrypt(invalidCiphertext))
                     .isInstanceOf(EncryptionService.EncryptionException.class)
-                    .hasMessageContaining("Failed to decrypt");
+                    .hasMessageContaining("Invalid encrypted data format");
         }
 
         @Test
@@ -146,54 +151,19 @@ class EncryptionServiceTest {
     @DisplayName("roundtrip")
     class RoundtripTests {
 
-        @Test
-        @DisplayName("should handle special characters")
-        void shouldHandleSpecialCharacters() {
-            // Arrange
-            String plaintext = "p@ss:w0rd!#$%^&*()_+-=[]{}|;':\",./<>?";
-
-            // Act
-            String encrypted = encryptionService.encrypt(plaintext);
-            String decrypted = encryptionService.decrypt(encrypted);
-
-            // Assert
-            assertThat(decrypted).isEqualTo(plaintext);
+        static Stream<String> plaintextProvider() {
+            return Stream.of(
+                    "p@ss:w0rd!#$%^&*()_+-=[]{}|;':\",./<>?",  // special characters
+                    "密码 пароль كلمة السر 🔐",                    // unicode characters
+                    "A".repeat(10000),                          // long text
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"  // JWT-like token
+            );
         }
 
-        @Test
-        @DisplayName("should handle unicode characters")
-        void shouldHandleUnicodeCharacters() {
-            // Arrange
-            String plaintext = "密码 пароль كلمة السر 🔐";
-
-            // Act
-            String encrypted = encryptionService.encrypt(plaintext);
-            String decrypted = encryptionService.decrypt(encrypted);
-
-            // Assert
-            assertThat(decrypted).isEqualTo(plaintext);
-        }
-
-        @Test
-        @DisplayName("should handle long text")
-        void shouldHandleLongText() {
-            // Arrange
-            String plaintext = "A".repeat(10000);
-
-            // Act
-            String encrypted = encryptionService.encrypt(plaintext);
-            String decrypted = encryptionService.decrypt(encrypted);
-
-            // Assert
-            assertThat(decrypted).isEqualTo(plaintext);
-        }
-
-        @Test
-        @DisplayName("should handle JWT-like token")
-        void shouldHandleJwtLikeToken() {
-            // Arrange
-            String plaintext = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
-
+        @ParameterizedTest(name = "should encrypt and decrypt: {0}")
+        @MethodSource("plaintextProvider")
+        @DisplayName("should encrypt and decrypt various plaintext formats")
+        void shouldEncryptAndDecryptVariousFormats(String plaintext) {
             // Act
             String encrypted = encryptionService.encrypt(plaintext);
             String decrypted = encryptionService.decrypt(encrypted);
@@ -212,43 +182,28 @@ class EncryptionServiceTest {
     @DisplayName("key validation")
     class KeyValidationTests {
 
-        @Test
-        @DisplayName("should throw exception when key is null")
-        void shouldThrowExceptionWhenKeyIsNull() {
-            // Arrange
-            EncryptionProperties props = new EncryptionProperties();
-            props.setSecretKey(null);
+        record InvalidKeyTestCase(String key, String expectedMessage, String description) {}
 
-            // Act & Assert
-            assertThatThrownBy(() -> new EncryptionService(props))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("not configured");
+        static Stream<InvalidKeyTestCase> invalidKeyProvider() {
+            return Stream.of(
+                    new InvalidKeyTestCase(null, "not configured", "null key"),
+                    new InvalidKeyTestCase("   ", "not configured", "blank key"),
+                    new InvalidKeyTestCase("short", "too short", "too short key")
+            );
         }
 
-        @Test
-        @DisplayName("should throw exception when key is blank")
-        void shouldThrowExceptionWhenKeyIsBlank() {
+        @ParameterizedTest(name = "should throw exception for {2}")
+        @MethodSource("invalidKeyProvider")
+        @DisplayName("should throw exception for invalid keys")
+        void shouldThrowExceptionForInvalidKeys(InvalidKeyTestCase testCase) {
             // Arrange
             EncryptionProperties props = new EncryptionProperties();
-            props.setSecretKey("   ");
+            props.setSecretKey(testCase.key());
 
             // Act & Assert
             assertThatThrownBy(() -> new EncryptionService(props))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("not configured");
-        }
-
-        @Test
-        @DisplayName("should throw exception when key is too short")
-        void shouldThrowExceptionWhenKeyIsTooShort() {
-            // Arrange
-            EncryptionProperties props = new EncryptionProperties();
-            props.setSecretKey("short"); // Less than 16 chars
-
-            // Act & Assert
-            assertThatThrownBy(() -> new EncryptionService(props))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("too short");
+                    .hasMessageContaining(testCase.expectedMessage());
         }
 
         @Test
