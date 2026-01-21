@@ -1,11 +1,12 @@
 package com.aegis.tests.orchestrator.controller;
 
-import com.aegis.tests.orchestrator.exception.GlobalExceptionHandler;
-import com.aegis.tests.orchestrator.exception.TestProjectLimitReachedException;
-import com.aegis.tests.orchestrator.exception.TestProjectNameAlreadyExistsException;
-import com.aegis.tests.orchestrator.model.dto.CreateTestProjectRequestDTO;
-import com.aegis.tests.orchestrator.model.dto.TestProjectResponseDTO;
-import com.aegis.tests.orchestrator.services.TestProjectService;
+import com.aegis.tests.orchestrator.shared.exception.GlobalExceptionHandler;
+import com.aegis.tests.orchestrator.testproject.exception.TestProjectLimitReachedException;
+import com.aegis.tests.orchestrator.testproject.exception.TestProjectNameAlreadyExistsException;
+import com.aegis.tests.orchestrator.testproject.dto.CreateTestProjectRequestDTO;
+import com.aegis.tests.orchestrator.testproject.dto.TestProjectResponseDTO;
+import com.aegis.tests.orchestrator.testproject.TestProjectService;
+import com.aegis.tests.orchestrator.testproject.TestProjectController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

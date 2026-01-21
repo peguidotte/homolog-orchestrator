@@ -1,12 +1,22 @@
 package com.aegis.tests.orchestrator.controller;
 
-import com.aegis.tests.orchestrator.exception.*;
-import com.aegis.tests.orchestrator.model.dto.CreateSpecificationRequestDTO;
-import com.aegis.tests.orchestrator.model.dto.SpecificationResponseDTO;
-import com.aegis.tests.orchestrator.model.enums.HttpMethod;
-import com.aegis.tests.orchestrator.model.enums.SpecStatus;
-import com.aegis.tests.orchestrator.model.enums.SpecificationInputType;
-import com.aegis.tests.orchestrator.services.SpecificationService;
+import com.aegis.tests.orchestrator.apicall.exception.ApiCallInvalidException;
+import com.aegis.tests.orchestrator.apicall.exception.ApiCallNotFoundException;
+import com.aegis.tests.orchestrator.authprofile.exception.AuthProfileInvalidException;
+import com.aegis.tests.orchestrator.authprofile.exception.AuthProfileRequiredException;
+import com.aegis.tests.orchestrator.domain.exception.DomainNotFoundException;
+import com.aegis.tests.orchestrator.environment.exception.EnvironmentNotFoundException;
+import com.aegis.tests.orchestrator.shared.exception.GlobalExceptionHandler;
+import com.aegis.tests.orchestrator.specification.dto.CreateSpecificationRequestDTO;
+import com.aegis.tests.orchestrator.specification.dto.SpecificationResponseDTO;
+import com.aegis.tests.orchestrator.shared.model.enums.HttpMethod;
+import com.aegis.tests.orchestrator.specification.SpecificationStatus;
+import com.aegis.tests.orchestrator.specification.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.SpecificationService;
+import com.aegis.tests.orchestrator.specification.SpecificationController;
+import com.aegis.tests.orchestrator.specification.exception.SpecificationAlreadyExistsException;
+import com.aegis.tests.orchestrator.specification.exception.SupportingApiCallInvalidException;
+import com.aegis.tests.orchestrator.testproject.exception.TestProjectNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -496,7 +506,7 @@ class SpecificationControllerTest {
                 request.requiresAuth(),
                 jsonNodeToString(request.requestExample()),
                 request.approveBeforeGeneration(),
-                SpecStatus.CREATED,
+                SpecificationStatus.CREATED,
                 TEST_PROJECT_ID,
                 ENVIRONMENT_ID,
                 request.domainId(),
@@ -521,7 +531,7 @@ class SpecificationControllerTest {
                 request.requiresAuth(),
                 jsonNodeToString(request.requestExample()),
                 request.approveBeforeGeneration(),
-                SpecStatus.CREATED,
+                SpecificationStatus.CREATED,
                 TEST_PROJECT_ID,
                 ENVIRONMENT_ID,
                 DOMAIN_ID,  // from ApiCall

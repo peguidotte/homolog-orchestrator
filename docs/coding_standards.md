@@ -89,6 +89,7 @@ Use **suffix-based naming** for error codes:
 ```java
 package com.aegis.tests.orchestrator.exception;
 
+import com.aegis.tests.orchestrator.shared.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 
 public class EnvironmentLimitReachedException extends BusinessException {
