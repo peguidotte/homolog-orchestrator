@@ -24,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(
-        name = "t_aegis_auth_profiles",
+        name = "auth_profiles",
         indexes = {
                 @Index(name = "idx_auth_profile_environment_id", columnList = "environment_id"),
                 @Index(name = "idx_auth_profile_name", columnList = "name")

@@ -17,6 +17,8 @@ import com.aegis.tests.orchestrator.environment.Environment;
 import com.aegis.tests.orchestrator.environment.EnvironmentRepository;
 import com.aegis.tests.orchestrator.environment.exception.EnvironmentNotFoundException;
 import com.aegis.tests.orchestrator.specification.dto.CreateSpecificationRequestDTO;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationStatus;
 import com.aegis.tests.orchestrator.specification.exception.SpecificationCreatedEvent;
 import com.aegis.tests.orchestrator.specification.dto.SpecificationResponseDTO;
 import com.aegis.tests.orchestrator.shared.model.enums.HttpMethod;

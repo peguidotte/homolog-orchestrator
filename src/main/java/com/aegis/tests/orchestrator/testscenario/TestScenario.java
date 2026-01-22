@@ -33,7 +33,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @ToString(callSuper = true, exclude = "project")
 @Entity
-@Table(name = "t_aegis_test_scenarios")
+@Table(name = "test_scenarios")
 public class TestScenario extends AuditableEntity {
 
     @Id
@@ -52,19 +52,19 @@ public class TestScenario extends AuditableEntity {
     private String title;
 
     @ElementCollection
-    @CollectionTable(name = "t_aegis_scenario_tags", joinColumns = @JoinColumn(name = "scenario_id"))
+    @CollectionTable(name = "scenario_tags", joinColumns = @JoinColumn(name = "scenario_id"))
     @Column(name = "tag_id")
     @Builder.Default
     private List<Long> tagIds = new ArrayList<>();
 
     @ElementCollection
-    @CollectionTable(name = "t_aegis_scenario_vars", joinColumns = @JoinColumn(name = "scenario_id"))
+    @CollectionTable(name = "scenario_vars", joinColumns = @JoinColumn(name = "scenario_id"))
     @Column(name = "variable_id", length = 64)
     @Builder.Default
     private List<String> customVariableIds = new ArrayList<>();
 
     @ElementCollection
-    @CollectionTable(name = "t_aegis_scenario_calls", joinColumns = @JoinColumn(name = "scenario_id"))
+    @CollectionTable(name = "scenario_calls", joinColumns = @JoinColumn(name = "scenario_id"))
     @Column(name = "api_call_id")
     @Builder.Default
     private List<Long> usedApiCallIds = new ArrayList<>();

@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @Entity
-@Table(name = "t_aegis_domains")
+@Table(name = "domains")
 public class Domain extends AuditableEntity {
 
     @Id

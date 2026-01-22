@@ -40,7 +40,7 @@ This task implements the `POST /v1/test-projects/{testProjectId}/specifications`
 
 #### 1.1 Create `BaseUrl` Entity (NEW)
 
-**Table:** `t_aegis_base_urls`
+**Table:** `base_urls`
 
 | Field | Type | Nullable | Description |
 |-------|------|----------|-------------|
@@ -63,7 +63,7 @@ This task implements the `POST /v1/test-projects/{testProjectId}/specifications`
 
 #### 1.2 Update `ApiCall` Entity
 
-**Table:** `t_aegis_api_calls` (updated)
+**Table:** `api_calls` (updated)
 
 | Field | Type | Nullable | Description | Change |
 |-------|------|----------|-------------|--------|
@@ -106,7 +106,7 @@ public enum SpecificationInputType {
 **New relationship:**
 - N:1 → `ApiCall` (optional, when inputType=API_CALL)
 
-**New join table:** `t_aegis_specification_supporting_api_calls`
+**New join table:** `specification_supporting_api_calls`
 
 | Field | Type | Description |
 |-------|------|-------------|

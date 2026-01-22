@@ -17,7 +17,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "t_aegis_auth_credentials")
+@Table(name = "auth_credentials")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "auth_type", discriminatorType = DiscriminatorType.STRING, length = 30)
 @Getter

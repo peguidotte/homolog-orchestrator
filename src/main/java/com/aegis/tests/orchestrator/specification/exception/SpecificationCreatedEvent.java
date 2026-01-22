@@ -2,7 +2,7 @@ package com.aegis.tests.orchestrator.specification.exception;
 
 import com.aegis.tests.orchestrator.apicall.ApiCall;
 import com.aegis.tests.orchestrator.specification.Specification;
-import com.aegis.tests.orchestrator.specification.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;

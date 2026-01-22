@@ -30,7 +30,7 @@ import lombok.experimental.SuperBuilder;
  */
 @Entity
 @Table(
-        name = "t_aegis_base_urls",
+        name = "base_urls",
         indexes = {
                 @Index(name = "idx_base_url_project_id", columnList = "test_project_id"),
                 @Index(name = "idx_base_url_environment_id", columnList = "environment_id")

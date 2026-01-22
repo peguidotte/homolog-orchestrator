@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @Entity
-@Table(name = "t_aegis_tags")
+@Table(name = "tags")
 public class Tag extends AuditableEntity {
 
     @Id

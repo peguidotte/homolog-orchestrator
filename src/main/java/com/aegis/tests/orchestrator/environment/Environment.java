@@ -22,7 +22,7 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(
-        name = "t_aegis_environments",
+        name = "environments",
         indexes = {
                 @Index(name = "idx_environment_test_project_id", columnList = "test_project_id"),
                 @Index(name = "idx_environment_name", columnList = "name")

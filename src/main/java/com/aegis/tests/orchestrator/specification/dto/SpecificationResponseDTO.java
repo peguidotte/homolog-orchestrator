@@ -3,8 +3,8 @@ package com.aegis.tests.orchestrator.specification.dto;
 import com.aegis.tests.orchestrator.apicall.ApiCall;
 import com.aegis.tests.orchestrator.specification.Specification;
 import com.aegis.tests.orchestrator.shared.model.enums.HttpMethod;
-import com.aegis.tests.orchestrator.specification.SpecificationStatus;
-import com.aegis.tests.orchestrator.specification.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationStatus;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;

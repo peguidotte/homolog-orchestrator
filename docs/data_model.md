@@ -15,7 +15,7 @@ Este documento descreve as entidades JPA do projeto **aegis-homolog-orchestrator
 
 ## TestProject
 
-**Tabela:** `t_aegis_test_projects`
+**Tabela:** `test_projects`
 
 Container raiz do módulo Aegis Tests. Representa um projeto de testes vinculado a um Projeto Core.
 
@@ -53,7 +53,7 @@ Container raiz do módulo Aegis Tests. Representa um projeto de testes vinculado
 
 ## Environment
 
-**Tabela:** `t_aegis_environments`
+**Tabela:** `environments`
 
 Representa um contexto de execução de testes (ex: DEV, STAGING, PROD).
 

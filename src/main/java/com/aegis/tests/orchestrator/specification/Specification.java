@@ -5,6 +5,8 @@ import com.aegis.tests.orchestrator.authprofile.AuthProfile;
 import com.aegis.tests.orchestrator.domain.Domain;
 import com.aegis.tests.orchestrator.environment.Environment;
 import com.aegis.tests.orchestrator.shared.model.entity.AuditableEntity;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationStatus;
 import com.aegis.tests.orchestrator.testproject.TestProject;
 import com.aegis.tests.orchestrator.shared.model.enums.HttpMethod;
 import jakarta.persistence.Column;
@@ -46,7 +48,7 @@ import java.util.Set;
  */
 @Entity
 @Table(
-        name = "t_aegis_specifications",
+        name = "specifications",
         indexes = {
                 @Index(name = "idx_specification_test_project_id", columnList = "test_project_id"),
                 @Index(name = "idx_specification_environment_id", columnList = "environment_id"),
@@ -151,7 +153,7 @@ public class Specification extends AuditableEntity {
      */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "t_aegis_specification_supporting_api_calls",
+            name = "specification_supporting_api_calls",
             joinColumns = @JoinColumn(name = "specification_id"),
             inverseJoinColumns = @JoinColumn(name = "api_call_id")
     )

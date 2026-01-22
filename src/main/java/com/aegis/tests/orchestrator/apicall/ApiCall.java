@@ -45,7 +45,7 @@ import lombok.experimental.SuperBuilder;
 @ToString(callSuper = true, exclude = {"project", "domain", "baseUrl"})
 @Entity
 @Table(
-        name = "t_aegis_api_calls",
+        name = "api_calls",
         indexes = {
                 @Index(name = "idx_api_call_project_id", columnList = "project_id"),
                 @Index(name = "idx_api_call_domain_id", columnList = "domain_id"),
@@ -113,7 +113,7 @@ public class ApiCall extends AuditableEntity {
     private String responseExample;
 
     @ElementCollection
-    @CollectionTable(name = "t_aegis_api_call_vars", joinColumns = @JoinColumn(name = "api_call_id"))
+    @CollectionTable(name = "api_call_vars", joinColumns = @JoinColumn(name = "api_call_id"))
     @Column(name = "variable_id", length = 128)
     @Builder.Default
     private Set<String> customVariables = new HashSet<>();

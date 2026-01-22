@@ -1,7 +1,7 @@
 package com.aegis.tests.orchestrator.specification.dto;
 
 import com.aegis.tests.orchestrator.shared.model.enums.HttpMethod;
-import com.aegis.tests.orchestrator.specification.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

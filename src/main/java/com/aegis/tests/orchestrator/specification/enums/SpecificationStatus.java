@@ -1,4 +1,4 @@
-package com.aegis.tests.orchestrator.specification;
+package com.aegis.tests.orchestrator.specification.enums;
 
 public enum SpecificationStatus {
     CREATED,

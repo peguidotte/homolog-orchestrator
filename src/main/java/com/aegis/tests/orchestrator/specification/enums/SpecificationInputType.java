@@ -1,4 +1,4 @@
-package com.aegis.tests.orchestrator.specification;
+package com.aegis.tests.orchestrator.specification.enums;
 
 /**
  * Defines the input modality for creating a Specification.

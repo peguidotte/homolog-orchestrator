@@ -79,5 +79,5 @@ As regras de negócio (RNs) geralmente resultam em `401 Unauthorized`, `403 Forb
 ## Fluxo técnico
 
 1. Validação de existência do Projeto Core.
-2. Persistência na tabela `T_AEGIS_TEST_PROJECTS`.
+2. Persistência na tabela `TEST_PROJECTS`.
 3. Criação automática de um Environment padrão chamado "Default".

@@ -11,6 +11,8 @@ import com.aegis.tests.orchestrator.domain.DomainRepository;
 import com.aegis.tests.orchestrator.domain.exception.DomainNotFoundException;
 import com.aegis.tests.orchestrator.environment.EnvironmentRepository;
 import com.aegis.tests.orchestrator.environment.exception.EnvironmentNotFoundException;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
+import com.aegis.tests.orchestrator.specification.enums.SpecificationStatus;
 import com.aegis.tests.orchestrator.specification.exception.ManualInputRequiredException;
 import com.aegis.tests.orchestrator.specification.exception.SpecificationAlreadyExistsException;
 import com.aegis.tests.orchestrator.specification.exception.SupportingApiCallInvalidException;
