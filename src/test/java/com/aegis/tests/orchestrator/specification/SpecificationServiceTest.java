@@ -19,7 +19,7 @@ import com.aegis.tests.orchestrator.specification.exception.SupportingApiCallInv
 import com.aegis.tests.orchestrator.testproject.TestProjectRepository;
 import com.aegis.tests.orchestrator.testproject.exception.TestProjectNotFoundException;
 import com.aegis.tests.orchestrator.specification.dto.CreateSpecificationRequestDTO;
-import com.aegis.tests.orchestrator.specification.exception.SpecificationCreatedEvent;
+import com.aegis.tests.orchestrator.specification.dto.event.SpecificationCreatedEvent;
 import com.aegis.tests.orchestrator.specification.dto.SpecificationResponseDTO;
 import com.aegis.tests.orchestrator.apicall.ApiCall;
 import com.aegis.tests.orchestrator.authprofile.AuthProfile;

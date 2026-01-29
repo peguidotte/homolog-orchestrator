@@ -1,6 +1,6 @@
 package com.aegis.tests.orchestrator.specification.messaging;
 
-import com.aegis.tests.orchestrator.specification.exception.SpecificationCreatedEvent;
+import com.aegis.tests.orchestrator.specification.dto.event.SpecificationCreatedEvent;
 
 public abstract class SpecificationEventPublisherBase {
 

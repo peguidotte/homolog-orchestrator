@@ -1,7 +1,7 @@
 package com.aegis.tests.orchestrator.specification.messaging;
 
 import com.aegis.tests.orchestrator.shared.config.RabbitMQConfig;
-import com.aegis.tests.orchestrator.specification.exception.SpecificationCreatedEvent;
+import com.aegis.tests.orchestrator.specification.dto.event.SpecificationCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

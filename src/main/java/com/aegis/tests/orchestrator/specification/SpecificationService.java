@@ -19,7 +19,7 @@ import com.aegis.tests.orchestrator.environment.exception.EnvironmentNotFoundExc
 import com.aegis.tests.orchestrator.specification.dto.CreateSpecificationRequestDTO;
 import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
 import com.aegis.tests.orchestrator.specification.enums.SpecificationStatus;
-import com.aegis.tests.orchestrator.specification.exception.SpecificationCreatedEvent;
+import com.aegis.tests.orchestrator.specification.dto.event.SpecificationCreatedEvent;
 import com.aegis.tests.orchestrator.specification.dto.SpecificationResponseDTO;
 import com.aegis.tests.orchestrator.shared.model.enums.HttpMethod;
 import com.aegis.tests.orchestrator.specification.messaging.SpecificationEventPublisherBase;
@@ -109,23 +109,19 @@ public class SpecificationService {
         log.info("Creating specification '{}' for TestProject {} with inputType {}",
                 request.name(), testProjectId, request.inputType());
 
-        // 1. Validate TestProject exists
         TestProject testProject = testProjectRepository.findById(testProjectId)
                 .orElseThrow(() -> new TestProjectNotFoundException(testProjectId));
 
-        // 2. Validate Environment exists and belongs to TestProject
         Environment environment = environmentRepository.findByIdAndTestProjectId(
                         request.environmentId(), testProjectId)
                 .orElseThrow(() -> new EnvironmentNotFoundException(request.environmentId(), testProjectId));
 
-        // 3. Handle input type - resolve method, path, domain, and apiCall
         HttpMethod resolvedMethod;
         String resolvedPath;
         Domain resolvedDomain;
         ApiCall apiCall = null;
 
         if (request.inputType() == SpecificationInputType.MANUAL) {
-            // Validate method and path are provided for MANUAL mode
             if (request.method() == null || request.path() == null || request.path().isBlank()) {
                 throw new ManualInputRequiredException();
             }
@@ -133,37 +129,30 @@ public class SpecificationService {
             resolvedPath = request.path();
             resolvedDomain = resolveDomain(request.domainId());
         } else {
-            // API_CALL mode - validate and fetch ApiCall
             if (request.apiCallId() == null) {
                 throw new ApiCallIdRequiredException();
             }
             apiCall = validateAndFetchApiCall(request.apiCallId(), testProjectId);
             resolvedMethod = apiCall.getMethod();
             resolvedPath = apiCall.getRouteDefinition();
-            // Use domain from request if provided, otherwise from ApiCall
             resolvedDomain = request.domainId() != null
                     ? resolveDomain(request.domainId())
                     : apiCall.getDomain();
         }
 
-        // 4. Validate AuthProfile (if requiresAuth=true)
         AuthProfile authProfile = validateAuthProfile(request, environment);
 
-        // 5. Validate supporting ApiCalls belong to project
         Set<ApiCall> supportingApiCalls = validateSupportingApiCalls(
                 request.supportingApiCallIds(), testProjectId);
 
-        // 6. Check for duplicate specification (method + path + environment)
         if (specificationRepository.existsByMethodAndPathAndEnvironmentId(
                 resolvedMethod, resolvedPath, request.environmentId())) {
             throw new SpecificationAlreadyExistsException(
                     resolvedMethod, resolvedPath, request.environmentId());
         }
 
-        // 7. Determine initial status
         SpecificationStatus initialStatus = SpecificationStatus.CREATED;
 
-        // 8. Build and persist Specification
         Specification specification = Specification.builder()
                 .inputType(request.inputType())
                 .testProject(testProject)
@@ -189,11 +178,9 @@ public class SpecificationService {
         log.info("Specification created with ID: {} and status: {}",
                 savedSpecification.getId(), savedSpecification.getStatus());
 
-        // 9. Publish event if no approval required
         SpecificationCreatedEvent event = SpecificationCreatedEvent.fromEntity(savedSpecification);
         eventPublisher.publishSpecificationCreated(event);
 
-        // 10. Return response
         return SpecificationResponseDTO.fromEntity(savedSpecification);
     }
 
@@ -203,7 +190,6 @@ public class SpecificationService {
     private ApiCall validateAndFetchApiCall(Long apiCallId, Long testProjectId) {
         return apiCallRepository.findByIdAndProjectId(apiCallId, testProjectId)
                 .orElseThrow(() -> {
-                    // Check if it exists at all to provide better error message
                     if (apiCallRepository.existsById(apiCallId)) {
                         return new ApiCallInvalidException(apiCallId, testProjectId);
                     }
@@ -234,7 +220,6 @@ public class SpecificationService {
             throw new AuthProfileRequiredException();
         }
 
-        // Validate AuthProfile belongs to the Environment
         if (!authProfileRepository.existsByIdAndEnvironmentId(
                 request.authProfileId(), environment.getId())) {
             throw new AuthProfileInvalidException(request.authProfileId(), environment.getId());
