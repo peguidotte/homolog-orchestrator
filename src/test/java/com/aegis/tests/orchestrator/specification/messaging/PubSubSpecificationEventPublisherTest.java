@@ -3,6 +3,8 @@ package com.aegis.tests.orchestrator.specification.messaging;
 import com.aegis.tests.orchestrator.shared.config.PubSubMessagingProperties;
 import com.aegis.tests.orchestrator.specification.dto.event.SpecificationCreatedEvent;
 import com.aegis.tests.orchestrator.specification.enums.SpecificationInputType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +17,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ class PubSubSpecificationEventPublisherTest {
     private PubSubTemplate pubSubTemplate;
 
     private PubSubMessagingProperties properties;
+    private ObjectMapper objectMapper;
     private PubSubSpecificationEventPublisher publisher;
 
     private static final String TOPIC = "aegis-test.test-generation.started";
@@ -36,40 +38,44 @@ class PubSubSpecificationEventPublisherTest {
     void setUp() {
         properties = new PubSubMessagingProperties();
         properties.setSpecificationCreatedTopic(TOPIC);
-        publisher = new PubSubSpecificationEventPublisher(pubSubTemplate, properties);
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        publisher = new PubSubSpecificationEventPublisher(pubSubTemplate, properties, objectMapper);
     }
 
     @Test
     @DisplayName("should publish SpecificationCreatedEvent to configured topic")
-    void shouldPublishSpecificationCreatedEventToConfiguredTopic() {
+    void shouldPublishSpecificationCreatedEventToConfiguredTopic() throws Exception {
         // Arrange
         var event = createTestEvent(10L, "POST", "/api/v1/invoices");
-        when(pubSubTemplate.publish(eq(TOPIC), any(SpecificationCreatedEvent.class)))
+        String payload = objectMapper.writeValueAsString(event);
+        when(pubSubTemplate.publish(eq(TOPIC), eq(payload)))
                 .thenReturn(CompletableFuture.completedFuture("message-id"));
 
         // Act
         publisher.publishSpecificationCreated(event);
 
         // Assert
-        verify(pubSubTemplate).publish(TOPIC, event);
+        verify(pubSubTemplate).publish(TOPIC, payload);
     }
 
     @Test
     @DisplayName("should use topic from properties")
-    void shouldUseTopicFromProperties() {
+    void shouldUseTopicFromProperties() throws Exception {
         // Arrange
         String customTopic = "custom-topic";
         properties.setSpecificationCreatedTopic(customTopic);
 
         var event = createTestEvent(1L, "GET", "/api/test");
-        when(pubSubTemplate.publish(eq(customTopic), any(SpecificationCreatedEvent.class)))
+        String payload = objectMapper.writeValueAsString(event);
+        when(pubSubTemplate.publish(eq(customTopic), eq(payload)))
                 .thenReturn(CompletableFuture.completedFuture("message-id"));
 
         // Act
         publisher.publishSpecificationCreated(event);
 
         // Assert
-        verify(pubSubTemplate).publish(customTopic, event);
+        verify(pubSubTemplate).publish(customTopic, payload);
     }
 
     private SpecificationCreatedEvent createTestEvent(Long specId, String method, String path) {
@@ -90,6 +96,7 @@ class PubSubSpecificationEventPublisherTest {
                 null,
                 null,
                 List.of(),
+                "trace-456",
                 Instant.now()
         );
     }

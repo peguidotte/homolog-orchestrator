@@ -12,7 +12,7 @@ This task implements the `POST /v1/test-projects/{testProjectId}/specifications`
 - **Two input modalities:** MANUAL (direct input) or API_CALL (reference existing endpoint)
 - **ApiCall catalog:** Reusable endpoint definitions with BaseUrl relationship
 - **Polymorphic authentication:** BearerToken or BasicAuth with encryption
-- **Async communication:** RabbitMQ for aegis-agents (Python) integration
+- **Async communication:** Pub/Sub for aegis-agents (Python) integration
 - **Supporting endpoints:** Additional ApiCalls for validation context
 
 ---
@@ -256,9 +256,9 @@ public SpecificationResponseDTO createSpecification(
 
 ---
 
-### Phase 6: RabbitMQ Integration (Already Configured ✅)
+### Phase 6: Pub/Sub Integration (Already Configured ✅)
 
-The RabbitMQ setup is already in place. We need to:
+The Pub/Sub setup is already in place. We need to:
 
 #### 6.1 Update Event DTO
 
@@ -427,7 +427,7 @@ src/main/java/com/aegis/homolog/orchestrator/
 - [ ] All field validations return 400 with proper error codes
 - [ ] Business rule violations return 404/422/409 with proper error codes
 - [ ] Status is correctly determined based on `approveBeforeGeneration`
-- [ ] Event is published to RabbitMQ with updated payload
+- [ ] Event is published to Pub/Sub with updated payload
 - [ ] Response includes all specification data
 - [ ] Swagger documentation is complete
 - [ ] All unit tests pass
@@ -436,7 +436,7 @@ src/main/java/com/aegis/homolog/orchestrator/
 
 ## Notes
 
-- **RabbitMQ** chosen for MVP due to simpler local setup compared to Kafka
+- **Pub/Sub** chosen for MVP due to local emulator support
 - **Event consumption** will be implemented in `aegis-agents` (Python service)
 - **ApiCall catalog** serves as a reusable registry of endpoints
 - **BaseUrl** allows environment-specific URL configuration

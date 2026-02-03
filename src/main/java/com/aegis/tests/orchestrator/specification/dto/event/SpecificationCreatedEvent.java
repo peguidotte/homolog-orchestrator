@@ -65,6 +65,10 @@ public record SpecificationCreatedEvent(
         @Schema(description = "Supporting API calls for additional context")
         List<ApiCallContext> supportingApiCalls,
 
+        // === Distributed Tracing ===
+        @Schema(description = "Trace ID - follows the request through the entire call chain", example = "550e8400-e29b-41d4-a716-446655440000")
+        String traceId,
+
         // === Metadata ===
         @Schema(description = "When the specification was created")
         Instant createdAt
@@ -97,6 +101,7 @@ public record SpecificationCreatedEvent(
                 AuthProfileContext.fromEntity(entity.getAuthProfile()),
                 ApiCallContext.fromEntity(entity.getApiCall()),
                 supportingContexts,
+                com.aegis.tests.orchestrator.shared.context.CorrelationIdHolder.getOrCreateTraceId(),
                 entity.getCreatedAt()
         );
     }

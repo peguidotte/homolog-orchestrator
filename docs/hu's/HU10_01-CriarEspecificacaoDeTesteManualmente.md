@@ -311,14 +311,14 @@ As regras de negócio (RNs) geralmente resultam em `401 Unauthorized`, `403 Forb
 11. Define status inicial:
     - `WAITING_APPROVAL` → se `approveBeforeGeneration = true`
     - `CREATED` → caso contrário
-12. Publica evento `SPECIFICATION_CREATED` via RabbitMQ
+12. Publica evento `SPECIFICATION_CREATED` via Pub/Sub
 13. Retorna SpecificationResponseDTO
 
 ---
 
 ## Comunicação Assíncrona
 
-A comunicação entre **aegis-homolog-orchestrator** (Java) e **aegis-agents** (Python) é feita via **RabbitMQ**.
+A comunicação entre **aegis-homolog-orchestrator** (Java) e **aegis-agents** (Python) é feita via **Pub/Sub**.
 
 ### Eventos
 
@@ -327,7 +327,7 @@ A comunicação entre **aegis-homolog-orchestrator** (Java) e **aegis-agents** (
 | `SPECIFICATION_CREATED` | Specification criada | specId, projectId, envId, method, path, testObjective |
 | `SPECIFICATION_STATUS_CHANGED` | Status alterado | specId, oldStatus, newStatus |
 
-### Filas
+### Topics
 
 - `aegis.specification.created` - Notifica agentes sobre nova spec
 - `aegis.specification.status` - Atualizações de status dos agentes
