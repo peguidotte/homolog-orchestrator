@@ -74,7 +74,9 @@ GenerationJob (PLANNING)
 <aside>
 ➡️
 
-**Tópico** `aegis-test.test-generation.planned`
+**Tópico** `test-generation-planning-started` (Evento que indica que o planejamento iniciou)
+**Tópico** `test-generation-planning-completed` (Evento que indica que o planejamento foi concluído)  
+**Tópico** `test-generation-planning-failed` (Evento que indica que o planejamento falhou)
 
 </aside>
 

@@ -12,7 +12,7 @@
 	<artifactId>test-orchestrator</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>test-orchestrator</name>
-	<description>test MVP</description>
+	<description>Aegis Test Orchestration MVP module</description>
 	<url/>
 	<licenses>
 		<license/>
