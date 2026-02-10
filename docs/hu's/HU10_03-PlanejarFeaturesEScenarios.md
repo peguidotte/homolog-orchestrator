@@ -1,408 +1,264 @@
-> **COMO:** Sistema (Aegis Tests + Aegis Agent)
+> **AS:** System (Aegis Tests + Aegis Agent)
 >
-> **QUERO:** Transformar insumos do projeto em um plano estruturado de testes
+> **I WANT:** Transform project inputs into a structured test plan
 >
-> **PARA:** Definir claramente o que será gerado antes de escrever código.
+> **SO THAT:** We clearly define what will be generated before writing code.
 
 ---
 
-## Contexto
+## Context
 
-O **Planejamento** é a fase onde a IA analisa todo o contexto capturado e produz um **ScenarioPlan** — um plano detalhado de Features e Scenarios que serão gerados.
+Planning is the phase where the agent analyzes the full context and produces a ScenarioPlan: a detailed plan of Features, Scenarios, and Steps that will be generated.
 
-Esta fase é crucial porque:
-- Define a **estrutura** dos testes antes da geração
-- Permite **revisão humana** antes de gastar recursos com geração
-- Garante **cobertura adequada** do escopo definido
-- Facilita **estimativas** de tempo e custo
+This phase is crucial because it:
+- Defines test structure before generation
+- Enables human review before spending generation budget
+- Ensures adequate coverage of the defined scope
+- Allows time and cost estimation
 
-### O que é um ScenarioPlan?
+### What is a ScenarioPlan?
 
-Um ScenarioPlan é a representação estruturada do que a IA pretende gerar:
+A ScenarioPlan is a structured representation of what the agent intends to generate:
 
 ```
 ScenarioPlan
-├── Feature: Autenticação de Usuários
-│   ├── Scenario: Login com credenciais válidas
-│   ├── Scenario: Login com senha incorreta
-│   └── Scenario: Login com usuário inexistente
+├── Feature: User Authentication
+│   ├── Scenario: Login with valid credentials
+│   │   ├── Step: Send login request
+│   │   └── Step: Verify access token
+│   ├── Scenario: Login with invalid password
+│   │   ├── Step: Send login request
+│   │   └── Step: Verify error response
+│   └── Scenario: Login with missing credentials
+│       ├── Step: Send login request
+│       └── Step: Verify validation error
 │
-└── Feature: Gestão de Clientes
-    ├── Scenario: Criar cliente com dados válidos
-    ├── Scenario: Criar cliente com CPF duplicado
-    └── Scenario: Listar clientes com paginação
+└── Feature: Customer Management
+    ├── Scenario: Create customer with valid data
+    │   ├── Step: Send create request
+    │   └── Step: Verify customer created
+    └── Scenario: Create customer with duplicate CPF
+        ├── Step: Send create request
+        └── Step: Verify conflict response
 ```
 
-⚠️ **Importante:** Nenhum STEP é criado nesta fase. Nenhum código é gerado ainda.
+Important: no executable code is generated in this phase. Only the plan (features, scenarios, steps, outlines) is produced.
 
 ---
 
-## Fluxo do Planejamento
+## Planning Flow
 
 ```
 GenerationJob (PLANNING)
-        │
-        ▼
-┌───────────────────┐
-│   Aegis Agent     │
-│   (Python + LLM)  │
-└───────────────────┘
-        │
-        │ Analisa:
-        │ - Specification/ApiDocs/Repo
-        │ - Contexto do projeto
-        │ - Padrões do Aegis
-        │
-        ▼
-┌───────────────────┐
-│   ScenarioPlan    │
-│   (Features +     │
-│    Scenarios)     │
-└───────────────────┘
-        │
-        ▼
-   Persistir no BD
-        │
-        ▼
-  Status: PLANNED
+        |
+        v
++-------------------+
+|   Aegis Agent     |
+|   (Python + LLM)  |
++-------------------+
+        |
+        | Analyzes:
+        | - Specification / ApiDocs / Repo
+        | - Project context
+        | - Aegis patterns and guidelines
+        v
++-------------------+
+|   ScenarioPlan    |
+|   (Features +     |
+|    Scenarios +    |
+|    Steps)         |
++-------------------+
+        |
+        v
+Persist to DB
+        |
+        v
+Status: PLANNED
 ```
 
 ---
 
-## Tópico de Callback (Agente → Orchestrator)
+## Topics (Agent -> Orchestrator)
 
-<aside>
-➡️
-
-**Tópico** `test-generation-planning-started` (Evento que indica que o planejamento iniciou)
-**Tópico** `test-generation-planning-completed` (Evento que indica que o planejamento foi concluído)  
-**Tópico** `test-generation-planning-failed` (Evento que indica que o planejamento falhou)
-
-</aside>
+- `test-generation-planning-started` (planning started)
+- `test-generation-planning-completed` (planning completed)
+- `test-generation-planning-failed` (planning failed)
 
 ---
 
-## Layouts
+## Input Event (Orchestrator -> Agent)
 
-### Request (do Agente)
+### Headers
 
-| Campo | Tipo | Descrição | Exemplo | Req. |
-| --- | --- | --- | --- | --- |
-| `jobId` | UUID | ID do GenerationJob | `550e8400-...` | Obrigatório |
-| `features` | List\<FeaturePlan\> | Lista de Features planejadas | `[...]` | Obrigatório |
-| `summary` | String | Resumo do planejamento | `3 features, 12 scenarios` | Obrigatório |
-| `estimatedDuration` | Duration | Estimativa de tempo de geração | `PT15M` | Opcional |
-| `coverageAnalysis` | Object | Análise de cobertura | `{ ... }` | Opcional |
+Standard message headers (transport-agnostic):
 
-#### FeaturePlan
-
-| Campo | Tipo | Descrição | Exemplo |
+| Field | Type | Description | Required |
 | --- | --- | --- | --- |
-| `name` | String | Nome da Feature | `Autenticação de Usuários` |
-| `description` | String | Descrição | `Testes do módulo de auth` |
-| `scenarios` | List\<ScenarioPlan\> | Scenarios planejados | `[...]` |
+| sender | String | System or service that sent the message | Yes |
+| timestamp | ISO-8601 | UTC timestamp when message was produced | Yes |
+| correlationId | String | Correlation ID for tracing | Yes |
+| messageId | String | Message identifier | No |
+| traceId | String | Trace identifier | No |
 
-#### ScenarioPlan
+### Payload (TestGenerationRequest)
 
-| Campo | Tipo | Descrição | Exemplo |
+| Field | Type | Description | Required |
 | --- | --- | --- | --- |
-| `title` | String | Título do Scenario | `Login com credenciais válidas` |
-| `description` | String | Descrição da intenção | `Validar que...` |
-| `type` | Enum | Tipo do teste | `POSITIVE`, `NEGATIVE`, `EDGE_CASE` |
-| `priority` | Enum | Prioridade | `HIGH`, `MEDIUM`, `LOW` |
-| `tags` | List\<String\> | Tags sugeridas | `["auth", "smoke"]` |
-| `estimatedSteps` | Integer | Estimativa de STEPs | `5` |
+| specificationId | Integer | Specification ID | Yes |
+| name | String | Specification name | Yes |
+| description | String | Specification description | No |
+| inputType | String | Source input type | Yes |
+| method | String | Primary API method | Yes |
+| path | String | Primary API path | Yes |
+| testObjective | String | Objective of the tests | Yes |
+| requestExample | String | Serialized request example | No |
+| requiresAuth | Boolean | Whether endpoint requires auth | Yes |
+| approveBeforeGeneration | Boolean | Whether plan requires approval before generation | Yes |
+| testProject | Object | Test project reference | Yes |
+| environment | Object | Environment reference | Yes |
+| domain | Object | Domain reference | No |
+| authProfile | Object | Auth profile reference | No |
+| apiCall | Object | Primary API call specification | Yes |
+| supportingApiCalls | List<Object> | Supporting API call references | No |
+| traceId | String | Trace identifier | Yes |
+| createdAt | ISO-8601 | Creation timestamp | Yes |
 
-#### Exemplo Request
+### apiCall (Primary API Call Specification)
 
-```json
-{
-  "jobId": "550e8400-e29b-41d4-a716-446655440000",
-  "features": [
-    {
-      "name": "Autenticação de Usuários",
-      "description": "Testes completos do módulo de autenticação",
-      "scenarios": [
-        {
-          "title": "Login com credenciais válidas",
-          "description": "Validar que um usuário com credenciais corretas consegue autenticar",
-          "type": "POSITIVE",
-          "priority": "HIGH",
-          "tags": ["auth", "smoke", "critical"],
-          "estimatedSteps": 4
-        },
-        {
-          "title": "Login com senha incorreta",
-          "description": "Validar que o sistema rejeita senha incorreta com mensagem apropriada",
-          "type": "NEGATIVE",
-          "priority": "HIGH",
-          "tags": ["auth", "security"],
-          "estimatedSteps": 3
-        },
-        {
-          "title": "Login com usuário inexistente",
-          "description": "Validar comportamento ao tentar login com email não cadastrado",
-          "type": "NEGATIVE",
-          "priority": "MEDIUM",
-          "tags": ["auth"],
-          "estimatedSteps": 3
-        }
-      ]
-    },
-    {
-      "name": "Gestão de Clientes",
-      "description": "Testes CRUD do módulo de clientes",
-      "scenarios": [
-        {
-          "title": "Criar cliente com dados válidos",
-          "description": "Validar criação de cliente com todos os campos obrigatórios",
-          "type": "POSITIVE",
-          "priority": "HIGH",
-          "tags": ["customers", "crud"],
-          "estimatedSteps": 6
-        }
-      ]
-    }
-  ],
-  "summary": "2 features, 4 scenarios, estimativa de ~15 minutos para geração",
-  "estimatedDuration": "PT15M",
-  "coverageAnalysis": {
-    "endpointsCovered": 3,
-    "totalEndpoints": 5,
-    "coveragePercentage": 60,
-    "missingEndpoints": ["/api/v1/users/{id}", "/api/v1/users/{id}/avatar"]
-  }
-}
-```
+The primary API call must include request and response schemas, status codes, and examples.
 
-### Response
-
-```json
-{
-  "success": true,
-  "jobId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "PLANNED",
-  "featuresCount": 2,
-  "scenariosCount": 4
-}
-```
-
----
-
-## Endpoint para Visualizar o Plano
-
-<aside>
-➡️
-
-**GET** `/v1/generation-jobs/{jobId}/plan`
-
-</aside>
-
-Retorna o plano gerado para visualização do usuário.
-
-### Response
-
-```json
-{
-  "jobId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "PLANNED",
-  "plan": {
-    "features": [...],
-    "summary": "2 features, 4 scenarios",
-    "estimatedDuration": "PT15M",
-    "coverageAnalysis": {...}
-  },
-  "createdAt": "2026-01-28T10:05:00Z",
-  "requiresApproval": true
-}
-```
-
----
-
-## Endpoint para Aprovar/Rejeitar o Plano
-
-<aside>
-➡️
-
-**POST** `/v1/generation-jobs/{jobId}/plan/review`
-
-</aside>
-
-Permite que o usuário aprove, edite ou rejeite o plano.
-
-### Request
-
-| Campo | Tipo | Descrição | Exemplo | Req. |
-| --- | --- | --- | --- | --- |
-| `decision` | Enum | Decisão do usuário | `APPROVE`, `APPROVE_WITH_EDITS`, `REJECT` | Obrigatório |
-| `edits` | Object | Edições aplicadas | `{ ... }` | Condicional* |
-| `rejectionReason` | String | Motivo da rejeição | `Falta cobertura de...` | Condicional** |
-
-> \* Obrigatório se `decision == APPROVE_WITH_EDITS`
->
-> \*\* Obrigatório se `decision == REJECT`
-
-#### Exemplo: Aprovar
-
-```json
-{
-  "decision": "APPROVE"
-}
-```
-
-#### Exemplo: Aprovar com Edições
-
-```json
-{
-  "decision": "APPROVE_WITH_EDITS",
-  "edits": {
-    "removedScenarios": ["scenario-uuid-1"],
-    "addedScenarios": [
-      {
-        "featureName": "Autenticação de Usuários",
-        "title": "Login com token expirado",
-        "description": "Validar comportamento com token JWT expirado",
-        "type": "NEGATIVE",
-        "priority": "HIGH"
-      }
-    ],
-    "modifiedScenarios": [
-      {
-        "scenarioId": "scenario-uuid-2",
-        "newTitle": "Login com credenciais válidas - fluxo completo"
-      }
-    ]
-  }
-}
-```
-
-#### Exemplo: Rejeitar
-
-```json
-{
-  "decision": "REJECT",
-  "rejectionReason": "Falta cobertura dos endpoints de pagamento. Precisa incluir testes de PIX e boleto."
-}
-```
-
-### Response
-
-```json
-{
-  "jobId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "APPROVED",
-  "nextStep": "GENERATING",
-  "message": "Plan approved. Test generation will start shortly."
-}
-```
-
----
-
-## ScenarioType (Enum)
-
-| Valor | Descrição |
-| --- | --- |
-| `POSITIVE` | Testa o caminho feliz |
-| `NEGATIVE` | Testa casos de erro esperados |
-| `EDGE_CASE` | Testa limites e casos extremos |
-| `SECURITY` | Testes de segurança |
-| `PERFORMANCE` | Testes de performance/carga |
-
----
-
-## Entidades Relacionadas
-
-### FeaturePlan (NOVA)
-
-| Campo | Tipo | Descrição |
-| --- | --- | --- |
-| `id` | UUID | Identificador único |
-| `jobId` | UUID | FK para GenerationJob |
-| `name` | String | Nome da Feature |
-| `description` | Text | Descrição |
-| `order` | Integer | Ordem de exibição |
-| `status` | Enum | Status do planejamento |
-| `createdAt` | Timestamp | Data de criação |
-
-### ScenarioPlan (NOVA)
-
-| Campo | Tipo | Descrição |
-| --- | --- | --- |
-| `id` | UUID | Identificador único |
-| `featurePlanId` | UUID | FK para FeaturePlan |
-| `title` | String | Título do Scenario |
-| `description` | Text | Descrição da intenção |
-| `type` | Enum | Tipo do teste |
-| `priority` | Enum | Prioridade |
-| `estimatedSteps` | Integer | Estimativa de STEPs |
-| `status` | Enum | `PLANNED`, `APPROVED`, `REMOVED`, `MODIFIED` |
-| `order` | Integer | Ordem de exibição |
-
----
-
-## Regras de Negócio
-
-| Código | Regra | Racional | errorCode |
+| Field | Type | Description | Required |
 | --- | --- | --- | --- |
-| RN10.03.1 | Job deve estar em status PLANNING para receber plano | Fluxo | `JOB_INVALID_STATUS` |
-| RN10.03.2 | Plano deve ter pelo menos 1 Feature | Mínimo viável | `PLAN_EMPTY` |
-| RN10.03.3 | Cada Feature deve ter pelo menos 1 Scenario | Consistência | `FEATURE_EMPTY` |
-| RN10.03.4 | Apenas Jobs em status PLANNED ou WAITING_APPROVAL podem ser revisados | Fluxo | `JOB_NOT_REVIEWABLE` |
-| RN10.03.5 | Usuário deve ter permissão no TestProject | Segurança | `INSUFFICIENT_PERMISSIONS` |
+| id | Integer | API call ID | Yes |
+| name | String | API call name | Yes |
+| method | String | HTTP method | Yes |
+| path | String | Endpoint path | Yes |
+| description | String | API call description | No |
+| requestSchema | Object | Request body schema | Yes |
+| responseSchema | Object | Response body schema | Yes |
+| responseStatusCodes | List<Integer> | Expected status codes | Yes |
+| requestExamples | List<Object or String> | Request examples | No |
+| responseExamples | List<Object or String> | Response examples | No |
+
+### supportingApiCalls
+
+Supporting API calls provide context for verification. They are not the planning scope. The plan must cover only the primary apiCall.
 
 ---
 
-## Comunicação Assíncrona
+## Output Events (Agent -> Orchestrator)
 
-### Eventos Recebidos (do Agente)
+### Planning Started
 
-| Evento | Quando | Payload |
-| --- | --- | --- |
-| `PLANNING_STARTED` | IA iniciou planejamento | jobId |
-| `PLANNING_PROGRESS` | Progresso do planejamento | jobId, percentage, message |
-| `PLANNING_COMPLETED` | Planejamento concluído | jobId, plan |
-| `PLANNING_FAILED` | Falha no planejamento | jobId, error |
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| traceId | String | Trace identifier | Yes |
+| specificationId | Integer | Specification ID | Yes |
 
-### Eventos Publicados
+### Planning Progress
 
-| Evento | Quando | Payload |
-| --- | --- | --- |
-| `PLAN_READY_FOR_REVIEW` | Plano pronto para revisão | jobId, summary |
-| `PLAN_APPROVED` | Plano aprovado | jobId |
-| `PLAN_REJECTED` | Plano rejeitado | jobId, reason |
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| traceId | String | Trace identifier | Yes |
+| specificationId | Integer | Specification ID | Yes |
+| percentage | Integer | 0-100 | Yes |
+| message | String | Progress message | No |
+
+### Planning Completed
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| traceId | String | Trace identifier | Yes |
+| specificationId | Integer | Specification ID | Yes |
+| summary | String | Planning summary | Yes |
+| requiresApproval | Boolean | Whether approval is required | Yes |
+| features | List<FeaturePlan> | Planned features | Yes |
+| coverageAnalysis | Object | Coverage analysis | No |
+| metrics | Object | Planning metrics | No |
+
+### Planning Failed
+
+| Field | Type | Description | Required |
+| --- | --- | --- | --- |
+| traceId | String | Trace identifier | Yes |
+| specificationId | Integer | Specification ID | Yes |
+| errorType | String | Error category | Yes |
+| message | String | Error message | Yes |
 
 ---
 
-## Fluxo de Aprovação
+## FeaturePlan
+
+| Field | Type | Description |
+| --- | --- | --- |
+| featureNumber | Integer | Order of the feature in the plan |
+| featureName | String | Feature name |
+| featureTags | List<String> | Optional tags |
+| scenarios | List<ScenarioPlan> | Planned scenarios |
+
+## ScenarioPlan
+
+| Field | Type | Description |
+| --- | --- | --- |
+| scenarioNumber | Integer | Order of the scenario in the feature |
+| name | String | Scenario name |
+| description | String | Scenario intent | Optional |
+| type | Enum | POSITIVE, NEGATIVE, EDGE_CASE, SECURITY, PERFORMANCE |
+| priority | Enum | HIGH, MEDIUM, LOW |
+| tags | List<String> | Optional tags |
+| outlines | List<ScenarioOutline> | Optional outline configuration |
+| steps | List<StepPlan> | Planned steps |
+
+## StepPlan
+
+| Field | Type | Description |
+| --- | --- | --- |
+| stepNumber | Integer | Order of the step |
+| stepName | String | Step description |
+
+---
+
+## Business Rules
+
+| Code | Rule | Rationale | ErrorCode |
+| --- | --- | --- | --- |
+| RN10.03.1 | Job must be PLANNING to accept a plan | Flow | JOB_INVALID_STATUS |
+| RN10.03.2 | Plan must contain at least 1 Feature | Minimum viable | PLAN_EMPTY |
+| RN10.03.3 | Each Feature must contain at least 1 Scenario | Consistency | FEATURE_EMPTY |
+| RN10.03.4 | If requiresAuth is true, include auth failure scenarios | Security baseline | AUTH_SCENARIOS_REQUIRED |
+| RN10.03.5 | Planning must include positive, negative, edge, and security scenarios when context allows | Coverage | SCENARIO_COVERAGE_INCOMPLETE |
+| RN10.03.6 | Supporting API calls are context only, not primary scope | Scope | SUPPORT_API_SCOPE |
+
+---
+
+## Approval Flow
 
 ```
-PLANNED ────────────────────────────────────────────────────┐
-    │                                                       │
-    │  requiresApproval = true                              │  requiresApproval = false
-    │                                                       │
-    ▼                                                       │
-WAITING_APPROVAL                                            │
-    │                                                       │
-    ├──► APPROVE ──────────► APPROVED ──────────────────────┤
-    │                                                       │
-    ├──► APPROVE_WITH_EDITS ──► APPROVED_WITH_EDITS ────────┤
-    │                                                       │
-    └──► REJECT ──────────► REJECTED ──► PLANNING (retry)   │
-                                                            │
-                                                            ▼
-                                                       GENERATING
+PLANNED ----------------------------------------------+
+    |                                                   |
+    | requiresApproval = true                           | requiresApproval = false
+    v                                                   |
+WAITING_APPROVAL                                       |
+    |                                                   |
+    +--> APPROVE ------------> APPROVED ---------------+
+    |                                                   |
+    +--> APPROVE_WITH_EDITS -> APPROVED_WITH_EDITS -----+
+    |                                                   |
+    +--> REJECT -------------> REJECTED --> PLANNING    |
+                                                        |
+                                                        v
+                                                   GENERATING
 ```
 
-**(DÚVIDA)** O `requiresApproval` deve vir da Specification ou do GenerationJob?
+Note: Rejection reasons should be stored for learning and future improvements.
 
 ---
 
-## Resultado Esperado
+## Expected Outcome
 
-- ✅ ScenarioPlan criado e persistido
-- ✅ Features e Scenarios planejados
-- ✅ Cobertura analisada
-- ✅ Plano disponível para revisão (se necessário)
-- ❌ Nenhum STEP criado
-- ❌ Nenhum código gerado
-- ❌ Nenhuma Feature/Scenario final criada (apenas planos)
+- ScenarioPlan created and persisted
+- Features, Scenarios, and Steps planned
+- Coverage analyzed
+- Plan available for review (if required)
+- No executable code generated in this phase
+- No final test artifacts created yet
